@@ -1,0 +1,6 @@
+python 3.6 
+pytorch
+numpy
+scipy
+torch
+torch-scatter (pip install torch-scatter -f https://data.pyg.org/whl/torch-1.9.0+${CUDA}.html or conda install pytorch-scatter -c pyg)
