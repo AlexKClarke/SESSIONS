@@ -2,11 +2,19 @@ import numpy as np
 import torch
 from scipy.signal import butter, filtfilt, iirnotch, find_peaks
 from itertools import product
+# from torch_scatter import scatter_add
+
+
+# def scatter_mean(src, index, dim=-1, out=None, dim_size=None, fill_value=0):
+#
+#     out = scatter_add(src, index, dim, out, dim_size, fill_value)
+#     count = scatter_add(torch.ones_like(src), index, dim, None, out.size(dim))
+#     return out / count.clamp(min=1)
 
 
 def scatter_mean(src, index):
-    out = torch.zeros((src.size(0), int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index, src)
-    count = torch.zeros((src.size(0), int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index,
+    out = torch.zeros((int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index, src)
+    count = torch.zeros((int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index,
                                                                                                      torch.ones_like(
                                                                                                          src))
 
