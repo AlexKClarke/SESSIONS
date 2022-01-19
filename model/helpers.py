@@ -1,8 +1,17 @@
 import numpy as np
 import torch
 from scipy.signal import butter, filtfilt, iirnotch, find_peaks
-# from torch_scatter import scatter_mean
 from itertools import product
+
+
+def scatter_mean(src, index):
+    out = torch.zeros((src.size(0), int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index, src)
+    count = torch.zeros((src.size(0), int(index.flatten().max()) + 1), dtype=src.dtype).scatter_add_(-1, index,
+                                                                                                     torch.ones_like(
+                                                                                                         src))
+
+    return out / count.clamp(min=1)
+
 
 def t(pars):
     a, b = pars

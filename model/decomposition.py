@@ -88,8 +88,6 @@ class RunCKC:
         else:
             self.console.message(error_message)
 
-
-
     def decompose(self):
         """
         Runs the full decomposition pipeline of gCKC, including preprocessing steps (filtering, extension and whitening)
