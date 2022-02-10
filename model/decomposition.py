@@ -15,7 +15,7 @@ class RunCKC:
 
     """
 
-    def __init__(self, console):
+    def __init__(self, console, screen):
 
         super().__init__()
 
@@ -48,6 +48,8 @@ class RunCKC:
         self.images = False
         
         self.console = console
+        self.screen = screen
+
 
     def load_data_and_parameters(self, data, parameters):
         """
@@ -126,6 +128,8 @@ class RunCKC:
             self.func,
             self.clear_activations,
             self.delete_repeats,
+            self.console,
+            self.screen
         )
         self.data.update(gradient_descent.source_separate())
         

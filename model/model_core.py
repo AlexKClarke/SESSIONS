@@ -2,14 +2,18 @@ import torch
 from parameter_defaults import parameters
 from model import decomposition
 
+
 class Model(object):
-    def __init__(self, console):
+    def __init__(self, console, screen):
         self.console = console
+        self.screen = screen
         self.reader = None
+        self.data = None
         self.data_loaded = False
         self.parameters = parameters
         self.check_gpu()
-        self.decomp_algorithm = decomposition.RunCKC(console)
+        self.decomp_algorithm = decomposition.RunCKC(self.console, self.screen)
+        self.click_mode = 'writeback'
         
     def check_gpu(self):
         if torch.cuda.is_available():
@@ -65,8 +69,26 @@ class Model(object):
         self.console.message(input_text)
         
     def start_decomposition(self):
-        self.decomp_algorithm.load_data_and_parameters(self.data, self.parameters)
-        self.decomp_algorithm.decompose()
-            
+        if self.data_loaded:
+            self.decomp_algorithm.load_data_and_parameters(self.data, self.parameters)
+            self.decomp_algorithm.decompose()
+        else:
+            self.console.message('Please load data.')
+        
+    def change_mouseclick_mode(self, mode):
+        self.click_mode = mode
+        input_text = 'Now in ' + mode + ' mode.'
+        self.console.message(input_text)
+         
+    def mouseclick(self, time):
+        if self.click_mode == 'writeback':
+            input_text = str(time)
+            self.console.message(input_text)
+        if self.click_mode == 'makeline':
+            import numpy as np
+            x = time*np.ones(100)
+            self.screen.update_plot(x)
+        
+    
     
       

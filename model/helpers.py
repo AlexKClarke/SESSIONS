@@ -480,6 +480,8 @@ class GradDescent:
             func,
             clear_activations,
             delete_repeats,
+            console,
+            screen
     ):
         """
         Parameters
@@ -512,6 +514,10 @@ class GradDescent:
             True if user wants to clear activations in initialisation library 5ms either side
         delete_repeats : bool
             True if user wants to delete sources that occur at the same time
+        console : view object
+            The console to direct readback data to
+        screen : view object
+            The screen to direct graphical info to
 
         """
 
@@ -529,6 +535,9 @@ class GradDescent:
         self.func = func
         self.clear_activations = clear_activations
         self.delete_repeats = delete_repeats
+        
+        self.console = console
+        self.screen = screen
 
         self.i = None
         self.weights = None
@@ -538,6 +547,7 @@ class GradDescent:
         self.end_run = None
         self.sep_matrix = None
         self.step_saved = None
+        
 
     def initialise(self):
         """
@@ -574,6 +584,8 @@ class GradDescent:
         """
         source = torch.tensordot(torch.transpose(self.weights, 0, 1), torch.transpose(self.emg, 0, 1), 1)
         self.source = source / source.std(-1, unbiased=False)
+        
+        # self.screen.update_plot(self.source.detach().cpu().numpy())
 
         return self.source
 
@@ -920,7 +932,9 @@ class GradDescent:
             decomposition["numIterations"] = decomposition["numIterations"] + 1
             decomposition["steps_optimisation"].append(self.step_saved)
 
-            print(i + 1, self.sil)
+            input_text = 'Iteration ' + str(i + 1) + ' finished with SIL of ' + str(self.sil) + '.'
+            print(input_text)
+            self.console.message(input_text)
             if self.sil > self.cut_off_sil:
                 decomposition["timeStamps"].append(self.library)
                 if first is True:

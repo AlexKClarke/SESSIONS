@@ -3,8 +3,8 @@ import inspect
 import readers
 
 class ReaderBtn(tk.Button):
-    def __init__(self, master, model):
-        tk.Button.__init__(self, master=master)
+    def __init__(self, parent, model):
+        tk.Button.__init__(self, parent)
         self.model = model
         self['text'] = "Select Reader"
         self['command'] = self.display_options
@@ -44,8 +44,8 @@ class ReaderBtn(tk.Button):
 
 
 class LoadDataBtn(tk.Frame):
-    def __init__(self, master, model):
-        tk.Button.__init__(self, master=master)
+    def __init__(self, parent, model):
+        tk.Button.__init__(self, parent)
         self.model = model
         self['text'] = "Select File"
         self['command'] = self.select_file

@@ -1,8 +1,5 @@
 import matplotlib
-import numpy as np
 import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 matplotlib.use('TkAgg')
 from parameter_defaults import parameters
 
@@ -37,8 +34,8 @@ class ParametersBtn(tk.Button):
         Spatial whitening of the data
     """
 
-    def __init__(self, master, model):
-        tk.Button.__init__(self, master=master)
+    def __init__(self, parent, model):
+        tk.Button.__init__(self, parent)
         self.parameters = parameters
         self.model = model
         self['text'] = "Decomposition Settings"
@@ -87,8 +84,8 @@ class ParametersBtn(tk.Button):
         option_menu.destroy()
         
 class StartDecompBtn(tk.Button):
-    def __init__(self, master, model):
-        tk.Button.__init__(self, master=master)
+    def __init__(self, parent, model):
+        tk.Button.__init__(self, parent)
         self.model = model
         self['text'] = "Start Decomposition"
         self['command'] = self.start_decomposition
@@ -98,60 +95,68 @@ class StartDecompBtn(tk.Button):
 
 
 
+class ScreenController(tk.Frame):
+    def __init__(self, parent, model, screen):
+        tk.Frame.__init__(self, parent)
+        self.model = model
+        
+        self.mouse_click_function = 'writeback'
+        
+        self.screen = screen
+        self.screen.canvas.mpl_connect('button_press_event', 
+                                       self.mouse_click)
+        self._initialise_toolbar()
+        self._initialise_screen()
+        
+    def mouse_click(self, data):
+        time = data.xdata
+        self.model.mouseclick(time)
 
-def callback(event):
-    print("clicked at", event.xdata, event.ydata)
+    def _initialise_toolbar(self):
+        self.shift_back_btn = tk.Button(self,
+                                        text='Shift Forwards',
+                                        command=lambda: self._shift_axis(0.2))
+        self.shift_forward_btn = tk.Button(self,
+                                           text='Shift Backwards',
+                                           command=lambda: self._shift_axis(-0.2))
+        self.zoom_in_btn = tk.Button(self,
+                                     text='Zoom In',
+                                     command=lambda: self._zoom_axis(0.8))
+        self.zoom_out_btn = tk.Button(self,
+                                      text='Zoom Out',
+                                      command=lambda: self._zoom_axis(1.25))
+        self.writeback_btn = tk.Button(self, 
+                                      text='Write Back Mode',
+                                      command=lambda: self._mode_change('writeback'))
+        self.makeline_btn = tk.Button(self, 
+                                      text='Make Line Mode',
+                                      command=lambda: self._mode_change('makeline'))
 
-
-class Application(tk.Tk):
-    def __init__(self, parent):
-        self.parent = parent
-        self.build_buttons()
-        self.build_canvas()
-        self.build_interface()
-
-    def build_interface(self):
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        self.canvas.tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        self.zoom_in_btn.pack()
-        self.zoom_out_btn.pack()
-        self.slide_left_btn.pack()
-        self.slide_right_btn.pack()
-
-    def build_buttons(self):
-        self.zoom_in_btn = tk.Button(text='Zoom In', command=lambda: self.zoom_axis(0.8))
-        self.zoom_out_btn = tk.Button(text='Zoom Out', command=lambda: self.zoom_axis(1.25))
-        self.slide_left_btn = tk.Button(text='Slide Left', command=lambda: self.slide_axis(-0.2))
-        self.slide_right_btn = tk.Button(text='Slide Right', command=lambda: self.slide_axis(0.2))
-
-    def build_canvas(self):
-        self.fig = Figure(figsize=(5, 4), dpi=100)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)
-        self.canvas.draw()
-        self.canvas.mpl_connect('button_press_event', callback)
-        self.ax = self.fig.add_subplot(111)
-
-        t = np.arange(0.0, 3.0, 0.01)
-        s = np.sin(2 * np.pi * t)
-        self.ax.plot(t, s)
-
-        self.x_limits = self.ax.get_xlim()
-
-    def update_axis(self):
-        self.ax.set_xlim(self.x_limits)
-        self.canvas.draw()
-
-    def zoom_axis(self, factor):
-        x_start, x_end = self.x_limits
+    def _initialise_screen(self):
+        self.screen.canvas.get_tk_widget().grid(row=1, column=0)
+        self.zoom_in_btn.grid(row=1, column=1)
+        self.zoom_out_btn.grid(row=1, column=2)
+        self.shift_forward_btn.grid(row=1, column=3)
+        self.shift_back_btn.grid(row=1, column=4)
+        self.writeback_btn.grid(row=2, column=0)
+        self.makeline_btn.grid(row=2, column=1)
+        
+    def _zoom_axis(self, factor):
+        x_start, x_end = self.screen.ax.get_xlim()
         half_distance = (x_end - x_start) / 2
         centre = x_start + half_distance
         new_half_distance = half_distance * factor
-        self.x_limits = [centre - new_half_distance, centre + new_half_distance]
-        self.update_axis()
+        x_limits = [centre - new_half_distance, centre + new_half_distance]
+        self.screen.update_axis(x_limits)
 
-    def slide_axis(self, factor):
-        x_start, x_end = self.x_limits
+    def _shift_axis(self, factor):
+        x_start, x_end = self.screen.ax.get_xlim()
         distance = x_end - x_start
         shift = distance * factor
-        self.x_limits = [x_start + shift, x_end + shift]
-        self.update_axis()
+        x_limits = [x_start + shift, x_end + shift]
+        self.screen.update_axis(x_limits)
+        
+    def _mode_change(self, mode):
+        self.model.change_mouseclick_mode(mode)
+        
+        

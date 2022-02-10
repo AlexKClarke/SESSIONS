@@ -3,13 +3,17 @@ from controller import main_screen_assets
 from controller import decomp_screen_assets
 from model import model_core
 from view import view_core
-
+import threading
 
 class Controller(tk.Frame):
-    def __init__(self, master):
-        tk.Frame.__init__(self, master=master)
-        self.console = view_core.Console()
-        self.model = model_core.Model(self.console)
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.console = view_core.Console(self)
+        self.screen = view_core.IPTScreen(self)
+        
+        self.model = model_core.Model(self.console, self.screen)
+        
+        
         self.main_screen = MainScreen(self)
         self.decomp_screen = DecompositionScreen(self)
 
@@ -42,10 +46,15 @@ class DecompositionScreen(tk.Frame):
                               command=lambda: controller.main_screen.tkraise())
         parameters_btn = decomp_screen_assets.ParametersBtn(self, controller.model)
         start_decomp_btn = decomp_screen_assets.StartDecompBtn(self, controller.model)
+        IPT_screen = decomp_screen_assets.ScreenController(self, 
+                                                           controller.model, 
+                                                           controller.screen)
+
 
         parameters_btn.grid(row=1, column=0)
         start_decomp_btn.grid(row=2, column=0)
         ms_button.grid(row=3, column=0)
-        controller.console.grid(row=4, column=0)
+        IPT_screen.grid(row=4, column=0)
+        controller.console.grid(row=5, column=0)
 
 
